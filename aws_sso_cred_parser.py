@@ -36,6 +36,15 @@ def load_config_file() -> configparser.ConfigParser:
         return config
 
 
+def remove_old_credentials() -> None:
+    cachedir_path = get_correct_os_filepath("~/.aws/sso/cache")
+
+    cache_files = [x for x in os.listdir(cachedir_path) if x.endswith(".json")]
+
+    for filename in cache_files:
+        os.remove(f"{cachedir_path}/{filename}")
+
+
 def retrieve_client_token() -> str:
 
     cachedir_path = get_correct_os_filepath("~/.aws/sso/cache")
@@ -49,7 +58,6 @@ def retrieve_client_token() -> str:
                 access_token = blob.get("accessToken")
             except KeyError:
                 pass
-            os.remove(f"{cachedir_path}/{filename}")
 
     if not access_token:
         sys.exit("No access token found. Please login with 'aws sso login'.")
@@ -195,6 +203,8 @@ def parse_aws_creds_all_profiles() -> None:
     version_check()
 
     config_file = load_config_file()
+
+    remove_old_credentials()
 
     set_default_profile_config(config_file)
 
